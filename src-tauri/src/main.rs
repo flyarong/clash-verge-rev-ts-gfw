@@ -15,8 +15,15 @@ use tauri::{api, SystemTray};
 
 fn main() -> std::io::Result<()> {
     // 单例检测
-    if server::check_singleton().is_err() {
-        println!("app exists");
+    let app_exists: bool = tauri::async_runtime::block_on(async move {
+        if server::check_singleton().await.is_err() {
+            println!("app exists");
+            true
+        } else {
+            false
+        }
+    });
+    if app_exists {
         return Ok(());
     }
 
@@ -29,7 +36,9 @@ fn main() -> std::io::Result<()> {
     let mut builder = tauri::Builder::default()
         .system_tray(SystemTray::new())
         .setup(|app| {
-            resolve::resolve_setup(app);
+            tauri::async_runtime::block_on(async move {
+                resolve::resolve_setup(app).await;
+            });
             Ok(())
         })
         .on_system_tray_event(core::tray::Tray::on_system_tray_event)
@@ -42,6 +51,7 @@ fn main() -> std::io::Result<()> {
             cmds::open_web_url,
             cmds::open_core_dir,
             cmds::get_portable_flag,
+            cmds::get_network_interfaces,
             // cmds::kill_sidecar,
             cmds::restart_sidecar,
             // clash
@@ -54,6 +64,7 @@ fn main() -> std::io::Result<()> {
             cmds::get_runtime_exists,
             cmds::get_runtime_logs,
             cmds::uwp::invoke_uwp_tool,
+            cmds::copy_clash_env,
             // verge
             cmds::get_verge_config,
             cmds::patch_verge_config,
@@ -63,6 +74,7 @@ fn main() -> std::io::Result<()> {
             cmds::download_icon_cache,
             cmds::open_devtools,
             cmds::exit_app,
+            cmds::get_network_interfaces_info,
             // cmds::update_hotkeys,
             // profile
             cmds::get_profiles,

@@ -5,18 +5,25 @@ import { useTranslation } from "react-i18next";
 import { useVerge } from "@/hooks/use-verge";
 import { useLockFn } from "ahooks";
 import { LoadingButton } from "@mui/lab";
-import { SwitchAccessShortcut, RestartAlt } from "@mui/icons-material";
-import { Box, Button, List, ListItemButton, ListItemText } from "@mui/material";
+import {
+  SwitchAccessShortcutRounded,
+  RestartAltRounded,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Chip,
+  List,
+  ListItemButton,
+  ListItemText,
+} from "@mui/material";
 import { changeClashCore, restartSidecar } from "@/services/cmds";
 import { closeAllConnections, upgradeCore } from "@/services/api";
-import getSystem from "@/utils/get-system";
 
 const VALID_CORE = [
-  { name: "Clash Meta", core: "clash-meta" },
-  { name: "Clash Meta Alpha", core: "clash-meta-alpha" },
+  { name: "Mihomo", core: "verge-mihomo", chip: "Release Version" },
+  { name: "Mihomo Alpha", core: "verge-mihomo-alpha", chip: "Alpha Version" },
 ];
-
-const OS = getSystem();
 
 export const ClashCoreViewer = forwardRef<DialogRef>((props, ref) => {
   const { t } = useTranslation();
@@ -31,7 +38,7 @@ export const ClashCoreViewer = forwardRef<DialogRef>((props, ref) => {
     close: () => setOpen(false),
   }));
 
-  const { clash_core = "clash-meta" } = verge ?? {};
+  const { clash_core = "verge-mihomo" } = verge ?? {};
 
   const onCoreChange = useLockFn(async (core: string) => {
     if (core === clash_core) return;
@@ -81,7 +88,7 @@ export const ClashCoreViewer = forwardRef<DialogRef>((props, ref) => {
             <LoadingButton
               variant="contained"
               size="small"
-              startIcon={<SwitchAccessShortcut />}
+              startIcon={<SwitchAccessShortcutRounded />}
               loadingPosition="start"
               loading={upgrading}
               sx={{ marginRight: "8px" }}
@@ -93,7 +100,7 @@ export const ClashCoreViewer = forwardRef<DialogRef>((props, ref) => {
               variant="contained"
               size="small"
               onClick={onRestart}
-              startIcon={<RestartAlt />}
+              startIcon={<RestartAltRounded />}
             >
               {t("Restart")}
             </Button>
@@ -109,7 +116,7 @@ export const ClashCoreViewer = forwardRef<DialogRef>((props, ref) => {
         marginTop: "-8px",
       }}
       disableOk
-      cancelBtn={t("Back")}
+      cancelBtn={t("Close")}
       onClose={() => setOpen(false)}
       onCancel={() => setOpen(false)}
     >
@@ -121,6 +128,7 @@ export const ClashCoreViewer = forwardRef<DialogRef>((props, ref) => {
             onClick={() => onCoreChange(each.core)}
           >
             <ListItemText primary={each.name} secondary={`/${each.core}`} />
+            <Chip label={t(`${each.chip}`)} size="small" />
           </ListItemButton>
         ))}
       </List>

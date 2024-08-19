@@ -24,7 +24,7 @@ export const WebUIViewer = forwardRef<DialogRef>((props, ref) => {
 
   const webUIList = verge?.web_ui_list || [
     "https://metacubex.github.io/metacubexd/#/setup?http=true&hostname=%host&port=%port&secret=%secret",
-    "https://yacd.metacubex.one/?host=%host&port=%port&secret=%secret",
+    "https://yacd.metacubex.one/?hostname=%host&port=%port&secret=%secret",
   ];
 
   const handleAdd = useLockFn(async (value: string) => {
@@ -98,14 +98,13 @@ export const WebUIViewer = forwardRef<DialogRef>((props, ref) => {
         overflowY: "auto",
         userSelect: "text",
       }}
-      cancelBtn={t("Back")}
+      cancelBtn={t("Close")}
       disableOk
       onClose={() => setOpen(false)}
       onCancel={() => setOpen(false)}
     >
       {!editing && webUIList.length === 0 && (
         <BaseEmpty
-          text="Empty"
           extra={
             <Typography mt={2} sx={{ fontSize: "12px" }}>
               {t("Replace host, port, secret with %host, %port, %secret")}

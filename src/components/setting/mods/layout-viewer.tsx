@@ -79,7 +79,7 @@ export const LayoutViewer = forwardRef<DialogRef>((props, ref) => {
       title={t("Layout Setting")}
       contentSx={{ width: 450 }}
       disableOk
-      cancelBtn={t("Cancel")}
+      cancelBtn={t("Close")}
       onClose={() => setOpen(false)}
       onCancel={() => setOpen(false)}
     >
@@ -127,7 +127,7 @@ export const LayoutViewer = forwardRef<DialogRef>((props, ref) => {
         </Item>
 
         <Item>
-          <ListItemText primary={t("Menu Icon")} />
+          <ListItemText primary={t("Nav Icon")} />
           <GuardState
             value={verge?.menu_icon ?? "monochrome"}
             onCatch={onError}

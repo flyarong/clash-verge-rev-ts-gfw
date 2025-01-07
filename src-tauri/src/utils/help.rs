@@ -4,10 +4,6 @@ use nanoid::nanoid;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_yaml::{Mapping, Value};
 use std::{fs, path::PathBuf, str::FromStr};
-use tauri::{
-    api::shell::{open, Program},
-    Manager,
-};
 
 /// read data from yaml as struct T
 pub fn read_yaml<T: DeserializeOwned>(path: &PathBuf) -> Result<T> {
@@ -102,23 +98,42 @@ pub fn get_last_part_and_decode(url: &str) -> Option<String> {
 }
 
 /// open file
-/// use vscode by default
-pub fn open_file(app: tauri::AppHandle, path: PathBuf) -> Result<()> {
-    #[cfg(target_os = "macos")]
-    let code = "Visual Studio Code";
-    #[cfg(not(target_os = "macos"))]
-    let code = "code";
-
-    let _ = match Program::from_str(code) {
-        Ok(code) => open(&app.shell_scope(), path.to_string_lossy(), Some(code)),
-        Err(err) => {
-            log::error!(target: "app", "Can't find VScode `{err}`");
-            // default open
-            open(&app.shell_scope(), path.to_string_lossy(), None)
-        }
-    };
-
+pub fn open_file(_: tauri::AppHandle, path: PathBuf) -> Result<()> {
+    open::that_detached(&path.as_os_str())?;
     Ok(())
+}
+
+#[cfg(target_os = "macos")]
+pub fn is_monochrome_image_from_bytes(data: &[u8]) -> anyhow::Result<bool> {
+    let img = image::load_from_memory(data)?;
+    let rgb_img = img.to_rgb8();
+
+    for pixel in rgb_img.pixels() {
+        if pixel[0] != pixel[1] || pixel[1] != pixel[2] {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
+#[cfg(target_os = "linux")]
+pub fn linux_elevator() -> String {
+    use std::process::Command;
+    match Command::new("which").arg("pkexec").output() {
+        Ok(output) => {
+            if !output.stdout.is_empty() {
+                // Convert the output to a string slice
+                if let Ok(path) = std::str::from_utf8(&output.stdout) {
+                    path.trim().to_string()
+                } else {
+                    "sudo".to_string()
+                }
+            } else {
+                "sudo".to_string()
+            }
+        }
+        Err(_) => "sudo".to_string(),
+    }
 }
 
 #[macro_export]
@@ -172,6 +187,17 @@ macro_rules! wrap_err {
 macro_rules! ret_err {
     ($str: expr) => {
         return Err($str.into())
+    };
+}
+
+#[macro_export]
+macro_rules! t {
+    ($en:expr, $zh:expr, $use_zh:expr) => {
+        if $use_zh {
+            $zh
+        } else {
+            $en
+        }
     };
 }
 
